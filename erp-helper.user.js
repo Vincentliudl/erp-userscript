@@ -29,6 +29,7 @@
         input.dataset._done = '1';
         setVueInputValue(input, 'TEST123');
         console.log('已回显 →', input.value);
+        console.log('已回显 →', 222222222);
     }
 
     new MutationObserver(demo).observe(document.body, { childList: true, subtree: true });
