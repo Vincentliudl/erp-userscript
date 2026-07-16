@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GH-ERP 助手
 // @namespace    http://tampermonkey.net/
-// @version      1.0.4
+// @version      1.0.3
 // @description  体积框置灰，新增长宽高，自动算体积(cm³)回填
 // @author       You
 // @match        http://183.134.208.28:46483/*
@@ -14,8 +14,8 @@
 ;(function () {
   'use strict'
 
-  // 体积字段的标签文字
-  const LABEL_TEXT = '体积'
+  // 体积框（要置灰并回填的目标框）
+  const VOLUME_SELECTOR = '#form_item_pickingCode'
   // cm³：长×宽×高，不除
   const calcVolume = (l, w, h) => l * w * h
 
@@ -30,20 +30,8 @@
     input.dispatchEvent(new Event('change', { bubbles: true }))
   }
 
-  // 按标签文字找到对应的输入框
-  function findInputByLabel(text) {
-    const items = document.querySelectorAll('.ant-form-item')
-    for (const item of items) {
-      const label = item.querySelector('.ant-form-item-label')
-      if (label && label.textContent.trim().includes(text)) {
-        return item.querySelector('.ant-form-item-control-input-content input')
-      }
-    }
-    return null
-  }
-
   function enhance() {
-    const vol = findInputByLabel(LABEL_TEXT)
+    const vol = document.querySelector(VOLUME_SELECTOR)
     if (!vol || vol.dataset._lwhDone) return // 没找到 / 已处理过
     vol.dataset._lwhDone = '1'
 
@@ -52,9 +40,9 @@
     vol.style.background = '#f0f0f0'
     vol.style.color = '#999'
 
-    // 插入 长/宽/高 三个框
-    const box = document.createElement('span')
-    box.style.marginLeft = '8px'
+    // 在体积框「下面」插入 长/宽/高 三个框
+    const box = document.createElement('div')
+    box.style.marginTop = '6px'
     box.innerHTML =
       '长<input type="number" style="width:60px;margin:0 4px" data-k="l">' +
       '宽<input type="number" style="width:60px;margin:0 4px" data-k="w">' +
