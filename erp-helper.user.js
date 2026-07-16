@@ -7,8 +7,8 @@
 // @author       You
 // @match        http://183.134.208.28:46483/*
 // @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
-// @updateURL    https://cdn.jsdelivr.net/gh/Vincentliudl/erp-userscript@main/erp-helper.user.js
-// @downloadURL  https://cdn.jsdelivr.net/gh/Vincentliudl/erp-userscript@main/erp-helper.user.js
+// @updateURL    https://github.com/Vincentliudl/erp-userscript/raw/refs/heads/main/erp-helper.user.js
+// @downloadURL  https://github.com/Vincentliudl/erp-userscript/raw/refs/heads/main/erp-helper.user.js
 // @grant        none
 // ==/UserScript==
 
