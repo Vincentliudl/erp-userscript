@@ -1,9 +1,8 @@
-
 // ==UserScript==
 // @name         GH-ERP 助手
 // @namespace    http://tampermonkey.net/
 // @version      1.0.3
-// @description  try to take over the world!
+// @description  体积框置灰，新增长宽高，自动算体积(cm³)回填
 // @author       You
 // @match        http://183.134.208.28:46483/*
 // @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
@@ -12,26 +11,71 @@
 // @grant        none
 // ==/UserScript==
 
-(function() {
-    'use strict';
+;(function () {
+  'use strict'
 
-  function setVueInputValue(input, value) {
-        input.value = value;
-        // 触发 v-model 更新
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-        // 触发校验/失焦逻辑
-        input.dispatchEvent(new Event('change', { bubbles: true }));
+  // 体积字段的标签文字
+  const LABEL_TEXT = '体积'
+  // cm³：长×宽×高，不除
+  const calcVolume = (l, w, h) => l * w * h
+
+  // 兼容 Vue/ant-design 的写值方式（直接改 value 不生效，必须走原生 setter + 派发事件）
+  function setInputValue(input, value) {
+    const setter = Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype,
+      'value',
+    ).set
+    setter.call(input, value)
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    input.dispatchEvent(new Event('change', { bubbles: true }))
+  }
+
+  // 按标签文字找到对应的输入框
+  function findInputByLabel(text) {
+    const items = document.querySelectorAll('.ant-form-item')
+    for (const item of items) {
+      const label = item.querySelector('.ant-form-item-label')
+      if (label && label.textContent.trim().includes(text)) {
+        return item.querySelector('.ant-form-item-control-input-content input')
+      }
     }
+    return null
+  }
 
-    function demo() {
-        const input = document.querySelector('#form_item_pickingCode');
-        if (!input || input.dataset._done) return;
-        input.dataset._done = '1';
-        setVueInputValue(input, 'TEST123');
-        console.log('已回显 →', input.value);
-        console.log('已回显 →', 222222222);
+  function enhance() {
+    const vol = findInputByLabel(LABEL_TEXT)
+    if (!vol || vol.dataset._lwhDone) return // 没找到 / 已处理过
+    vol.dataset._lwhDone = '1'
+
+    // 置灰（用 readonly，值仍能正常提交）
+    vol.readOnly = true
+    vol.style.background = '#f0f0f0'
+    vol.style.color = '#999'
+
+    // 插入 长/宽/高 三个框
+    const box = document.createElement('span')
+    box.style.marginLeft = '8px'
+    box.innerHTML =
+      '长<input type="number" style="width:60px;margin:0 4px" data-k="l">' +
+      '宽<input type="number" style="width:60px;margin:0 4px" data-k="w">' +
+      '高<input type="number" style="width:60px;margin:0 4px" data-k="h">'
+    vol.parentNode.appendChild(box)
+
+    const get = (k) =>
+      parseFloat(box.querySelector('[data-k="' + k + '"]').value) || 0
+    const recalc = () => {
+      const v = calcVolume(get('l'), get('w'), get('h'))
+      setInputValue(vol, v ? String(+v.toFixed(3)) : '')
     }
+    box
+      .querySelectorAll('input')
+      .forEach((i) => i.addEventListener('input', recalc))
+  }
 
-    new MutationObserver(demo).observe(document.body, { childList: true, subtree: true });
-    demo();
-})();
+  // 单页应用内容动态渲染，持续监听
+  new MutationObserver(enhance).observe(document.body, {
+    childList: true,
+    subtree: true,
+  })
+  enhance()
+})()
