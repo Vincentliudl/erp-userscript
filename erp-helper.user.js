@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GH-ERP 助手
 // @namespace    http://tampermonkey.net/
-// @version      1.0.3
+// @version      1.0.5
 // @description  体积框置灰，新增长宽高，自动算体积(cm³)回填
 // @author       You
 // @match        http://183.134.208.28:46483/*
